@@ -5,16 +5,28 @@ import java.util.Map;
 
 public class Entity {
 
-  // Simple static counter for unique, sequential IDs
   private static int nextId = 0;
   public final int id;
 
-  // Key: The exact Class type | Value: The component instance
+  private int depth = 0; 
+
   private final Map<Class<? extends EntityComponent>, EntityComponent> components;
 
-  public Entity() {
+  public Entity(int x, int y, int depth) {
     this.id = nextId++;
     this.components = new HashMap<>();
+    this.depth = depth;
+    
+    Transform transform = new Transform(x, y);
+    this.addComponent(transform);
+  }
+
+  public int getDepth() {
+    return this.depth;
+  }
+
+  public void setDepth(int depth) {
+    this.depth = depth;
   }
 
   // O(1) Insertion

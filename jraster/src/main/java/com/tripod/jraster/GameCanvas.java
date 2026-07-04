@@ -9,27 +9,25 @@ import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 
 import com.tripod.jraster.entity.SpriteAnimator;
-import com.tripod.jraster.graphics.RenderRegistry;
-import com.tripod.jraster.graphics.RenderTarget;
+import com.tripod.jraster.graphics.fx.animation.PixelEffectAnimation;
+import com.tripod.jraster.graphics.fx.animation.PixelEffectAnimationManager;
 import com.tripod.jraster.graphics.renderable.Circle;
 import com.tripod.jraster.graphics.renderable.Rect;
 import com.tripod.jraster.graphics.renderable.Renderable;
 import com.tripod.jraster.graphics.renderable.SpriteRender;
 
-public class GameCanvas implements RenderRegistry {
+public class GameCanvas {
 
-  private final int WIDTH, HEIGHT, SCALE;
+  public final int WIDTH, HEIGHT, SCALE;
 
   private Canvas canvas;
   private BufferedImage image;
   private BufferStrategy bs;
   private int[] pixels;
 
-  private ArrayList<RenderTarget> renderTargets = new ArrayList<>();
-
-  public final RenderTarget DEFAULT_TARGET;
-
   private final ArrayList<Renderable> renderableQueue = new ArrayList<>();
+  
+  private PixelEffectAnimationManager pixelEffectManager = new PixelEffectAnimationManager();
 
   public GameCanvas(int w, int h, int s) {
     this.WIDTH = w;
@@ -45,37 +43,32 @@ public class GameCanvas implements RenderRegistry {
     this.image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     this.pixels = ((DataBufferInt) (image.getRaster().getDataBuffer()))
         .getData();
-    
-    DEFAULT_TARGET = new RenderTarget("DEFAULT_TARGET", 0, 0, WIDTH, HEIGHT);
-    registerRenderTarget(DEFAULT_TARGET);
-  }
 
-  @Override
-  public void registerRenderTarget(RenderTarget target) {
-    renderTargets.add(target);
-  }
-
-  @Override
-  public void removeRenderTarget(RenderTarget target) {
-    renderTargets.remove(target);
   }
 
   // TODO : move these primitive draw calls somewhere else?
-  public void drawRect(double x, double y, int w, int h, int c, boolean outline) {
+  public void drawRect(double x, double y, int w, int h, int c,
+      boolean outline) {
     renderableQueue.add(new Rect(x, y, w, h, c, outline));
   }
 
-  public void drawCircle(double xc, double yc, int radius, int color, boolean outline) {
+  public void drawCircle(double xc, double yc, int radius, int color,
+      boolean outline) {
     renderableQueue.add(new Circle(xc, yc, radius, color, outline));
   }
-  
-  public void drawSpriteAnimator(double x, double y, SpriteAnimator spriteAnimator) {
-    renderableQueue.add(new SpriteRender(x, y, spriteAnimator));
+
+  public void drawSpriteAnimator(double x, double y,
+      SpriteAnimator spriteAnimator, int depth) {
+    renderableQueue.add(new SpriteRender(x, y, spriteAnimator, depth));
   }
   // TODO : move these primitive draw calls somewhere else?
 
   protected Canvas getCanvas() {
     return this.canvas;
+  }
+  
+  public void applyPixelEffectAnimation(PixelEffectAnimation fxAnimator) {
+    pixelEffectManager.addPixelEffect(fxAnimator);
   }
 
   protected void render() {
@@ -84,16 +77,18 @@ public class GameCanvas implements RenderRegistry {
 
     Graphics g = prepareGraphics();
 
-    renderTargets.stream().forEach(rt -> rt.drawTarget());
-
-    // 2. Render deferred primitives on top of the render targets
+    // Render entities and primitives
     for (Renderable prim : renderableQueue) {
       prim.execute(pixels, WIDTH, HEIGHT);
     }
-
-    // Clear the queue so commands don't stack up infinitely across frames
+    
     renderableQueue.clear();
+    // End Render entities and primitives
+    
 
+   pixelEffectManager.render(this, pixels);
+    
+    
     g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
 
     g.dispose();

@@ -3,6 +3,7 @@ package com.tripod.jraster.entity;
 import com.tripod.jraster.asset.Sprite;
 
 public class SpriteAnimator implements EntityComponent {
+  
   private Sprite sprite;
   private int frameIndex = 0;
   private int frameCount = 0;

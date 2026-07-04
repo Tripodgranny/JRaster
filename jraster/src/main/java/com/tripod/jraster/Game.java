@@ -91,14 +91,14 @@ public abstract class Game implements Runnable {
       deltaFrames += passedTime / nsPerFrame;
 
       while (deltaTicks >= 1) {
-        entityRenderingSystem.updateAndRender(this.entities);
+        entityRenderingSystem.update(this.entities);
         update();
         updates++;
         deltaTicks--;
       }
       if (deltaFrames >= 1) {
-        canvas.render();
         render();
+        canvas.render();
         frames++;
         deltaFrames--;
       }

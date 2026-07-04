@@ -9,25 +9,22 @@ import com.tripod.jraster.entity.Transform;
 
 public class EntityRenderingSystem {
 
-    private final GameCanvas canvas;
+  private final GameCanvas canvas;
 
-    public EntityRenderingSystem(GameCanvas canvas) {
-        this.canvas = canvas;
+  public EntityRenderingSystem(GameCanvas canvas) {
+    this.canvas = canvas;
+  }
+
+  public void update(List<Entity> entities) {
+    for (Entity entity : entities) {
+      Transform transform = entity.getComponent(Transform.class);
+      SpriteAnimator animator = entity.getComponent(SpriteAnimator.class);
+
+      if (transform != null && animator != null) {
+        animator.update();
+        canvas.drawSpriteAnimator(transform.x, transform.y, animator, entity.getDepth());
+      }
     }
-
-    public void updateAndRender(List<Entity> entities) {
-        for (Entity entity : entities) {
-            Transform transform = entity.getComponent(Transform.class);
-            SpriteAnimator animator = entity.getComponent(SpriteAnimator.class);
-
-            // If an entity has both a position and a sprite, we process it
-            if (transform != null && animator != null) {
-                // 1. Update the component animation state
-                animator.update();
-
-                // 2. Queue it to the canvas for drawing
-                canvas.drawSpriteAnimator(transform.x, transform.y, animator);
-            }
-        }
-    }
+  }
+  
 }
