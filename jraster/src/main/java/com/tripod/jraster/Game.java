@@ -9,7 +9,7 @@ import com.tripod.jraster.graphics.systems.EntityRenderingSystem;
 public abstract class Game implements Runnable {
 
   private final GameAssetManager assetManager;
-  
+
   private ArrayList<Entity> entities = new ArrayList<>();
   private EntityRenderingSystem entityRenderingSystem;
 
@@ -23,7 +23,9 @@ public abstract class Game implements Runnable {
   private double deltaTime = 0;
   private volatile boolean running = false;
 
-  public Game(String title, int width, int height, int scale) {
+  public Game(String title, int width, int height) {
+
+    int scale = calculateScale(width, height);
 
     this.window = new GameWindow(title);
     this.canvas = new GameCanvas(width, height, scale);
@@ -31,22 +33,22 @@ public abstract class Game implements Runnable {
     this.assetManager = new GameAssetManager();
 
     loadResources();
-    
+
     entityRenderingSystem = new EntityRenderingSystem(this.canvas);
 
     thread = new Thread(this);
     thread.start();
 
   }
-  
+
   public void addEntity(Entity e) {
     this.entities.add(e);
   }
-  
+
   public void removeEntity(Entity e) {
     this.entities.remove(e);
   }
-  
+
   public GameAssetManager getGameAssetManager() {
     return this.assetManager;
   }
@@ -66,7 +68,7 @@ public abstract class Game implements Runnable {
   protected abstract void loadResources();
   protected abstract void update();
   protected abstract void render();
-  
+
   @Override
   public void run() {
     System.out.println("Thread started");
@@ -114,6 +116,21 @@ public abstract class Game implements Runnable {
         updates = 0;
       }
     }
+  }
+
+  // TODO : Fix this as it will break small monitors because we are manually
+  // subtracting by a value to make the scale a bit smaller
+  private int calculateScale(int width, int height) {
+    // Get the physical screen dimensions of the primary monitor
+    java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
+        .getScreenSize();
+    int maxScaleX = screenSize.width / width;
+    int maxScaleY = (screenSize.height - 100) / height;
+    int idealScale = Math.min(maxScaleX - 2, maxScaleY - 2);
+    if (idealScale < 1)
+      idealScale = 1;
+
+    return idealScale;
   }
 
 }

@@ -1,6 +1,7 @@
 package com.tripod.jraster;
 
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
@@ -25,50 +26,51 @@ public class GameCanvas {
   private BufferStrategy bs;
   private int[] pixels;
 
-  private final ArrayList<Renderable> renderableQueue = new ArrayList<>();
-  
+  private final ArrayList<Renderable> renderables = new ArrayList<>();
+
   private PixelEffectAnimationManager pixelEffectManager = new PixelEffectAnimationManager();
 
   public GameCanvas(int w, int h, int s) {
     this.WIDTH = w;
     this.HEIGHT = h;
     this.SCALE = s;
+    Dimension size = new Dimension(w * s, h * s);
 
     this.canvas = new Canvas();
-    Dimension size = new Dimension(w * s, h * s);
     this.canvas.setPreferredSize(size);
-    this.canvas.setMinimumSize(size);
-    this.canvas.setMaximumSize(size);
+    
+    this.canvas.setBackground(Color.BLACK);
 
     this.image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     this.pixels = ((DataBufferInt) (image.getRaster().getDataBuffer()))
         .getData();
-
   }
 
   // TODO : move these primitive draw calls somewhere else?
   public void drawRect(double x, double y, int w, int h, int c,
       boolean outline) {
-    renderableQueue.add(new Rect(x, y, w, h, c, outline));
+    renderables.add(new Rect(x, y, w, h, c, outline));
   }
 
   public void drawCircle(double xc, double yc, int radius, int color,
       boolean outline) {
-    renderableQueue.add(new Circle(xc, yc, radius, color, outline));
+    renderables.add(new Circle(xc, yc, radius, color, outline));
   }
 
   public void drawSpriteAnimator(double x, double y,
       SpriteAnimator spriteAnimator, int depth) {
-    renderableQueue.add(new SpriteRender(x, y, spriteAnimator, depth));
+    renderables.add(new SpriteRender(x, y, spriteAnimator, depth));
   }
-  // TODO : move these primitive draw calls somewhere else?
+  // END primitive draw calls
+  
+  // TODO : move pixel effect animation calls somewhere else?
+  public void applyPixelEffectAnimation(PixelEffectAnimation fxAnimator) {
+    pixelEffectManager.addPixelEffect(fxAnimator);
+  }
+  // END pixel effect animation
 
   protected Canvas getCanvas() {
     return this.canvas;
-  }
-  
-  public void applyPixelEffectAnimation(PixelEffectAnimation fxAnimator) {
-    pixelEffectManager.addPixelEffect(fxAnimator);
   }
 
   protected void render() {
@@ -76,28 +78,47 @@ public class GameCanvas {
       return;
 
     Graphics g = prepareGraphics();
+    if (g == null)
+      return;
 
-    // Render entities and primitives
-    for (Renderable prim : renderableQueue) {
+    // Render your internal software pixel array at its fixed game size
+    for (Renderable prim : renderables) {
       prim.execute(pixels, WIDTH, HEIGHT);
     }
-    
-    renderableQueue.clear();
-    // End Render entities and primitives
-    
+    renderables.clear();
+    pixelEffectManager.render(this, pixels);
 
-   pixelEffectManager.render(this, pixels);
-    
-    
-    g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
+    // --- CROSS PLATFORM SOLUTION (hopefully....) ---
+    int canvasW = canvas.getWidth();
+    int canvasH = canvas.getHeight();
 
+    // maintain aspect ratio perfectly, filling as much space as possible
+    int drawW = canvasW;
+    int drawH = (int) (((double) HEIGHT / WIDTH) * canvasW);
+    if (drawH > canvasH) {
+      drawH = canvasH;
+      drawW = (int) (((double) WIDTH / HEIGHT) * canvasH);
+    }
+
+    // center the image inside the canvas space
+    int xOffset = (canvasW - drawW) / 2;
+    int yOffset = (canvasH - drawH) / 2;
+
+    g.drawImage(image, xOffset, yOffset, drawW, drawH, null);
+    
     g.dispose();
-    bs.show();
+    
+    if (!bs.contentsLost()) {
+      bs.show();
+    } else {
+      bs = null;
+    }
   }
 
   private Graphics prepareGraphics() {
 
     bs = this.canvas.getBufferStrategy();
+    
     if (bs == null) {
       this.canvas.createBufferStrategy(3);
       bs = this.canvas.getBufferStrategy();
@@ -105,7 +126,12 @@ public class GameCanvas {
 
     clear();
 
-    return bs.getDrawGraphics();
+    try {
+      return bs.getDrawGraphics();
+    } catch (IllegalStateException e) {
+      bs = null;
+      return null;
+    }
 
   }
 

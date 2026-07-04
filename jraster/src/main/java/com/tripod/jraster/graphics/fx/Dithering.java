@@ -3,7 +3,7 @@ package com.tripod.jraster.graphics.fx;
 import com.tripod.jraster.GameCanvas;
 
 public class Dithering extends PixelEffect {
-  
+
   private int colorDepth = 0;
 
   public Dithering(int x, int y, int width, int height, int colorDepth) {
@@ -81,5 +81,19 @@ public class Dithering extends PixelEffect {
     int finalColor = bucket * step;
     return finalColor > 255 ? 255 : finalColor;
   }
-  
+
+  public void setColorDepth(int colorDepth) {
+    if (colorDepth <= 1) {
+      colorDepth = 2;
+    } else if (colorDepth > 16) {
+      colorDepth = 16;
+    }
+
+    this.colorDepth = colorDepth;
+  }
+
+  public int getColorDepth() {
+    return this.colorDepth;
+  }
+
 }

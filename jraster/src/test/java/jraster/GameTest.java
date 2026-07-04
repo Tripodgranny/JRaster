@@ -24,7 +24,7 @@ public class GameTest extends Game {
   MonoChrome mono = new MonoChrome(0, 0, 256, 224);
   Ripple ripple = new Ripple(0, 0, 256, 224);
   PalletSwap pSwap = new PalletSwap(0, 0, 256, 224);
-  Dithering dither = new Dithering(0, 0, 256, 224, 8);
+  Dithering dither = new Dithering(0, 0, 256, 224, 6);
   RadialBlur blur = new RadialBlur(0,0,256,224);
   
   SweepPixelEffectAnimation crtAnim = new SweepPixelEffectAnimation(crtScan, 1);
@@ -37,11 +37,15 @@ public class GameTest extends Game {
   // TODO : We need to abstract this out of the test.
   // TODO : We need to create a configuration file for creating the Game
   public static void main(String[] args) {
-    new GameTest("TEST", 256, 224, 4);
+    
+    // this is not cross platform and only works on java version 9+
+    System.setProperty("sun.java2d.uiScale", "1.0");
+    
+    new GameTest("TEST", 256, 224);
   }
 
-  public GameTest(String title, int width, int height, int scale) {
-    super(title, width, height, scale);
+  public GameTest(String title, int width, int height) {
+    super(title, width, height);
   }
 
   protected void loadResources() {
@@ -62,7 +66,6 @@ public class GameTest extends Game {
     e2.addComponent(animator2);
     addEntity(e2);
     
-    
   }
 
   double i = 0;
@@ -77,7 +80,13 @@ public class GameTest extends Game {
   protected void render() {
     //pixelEffectAnimation.setSweepVertical(true);
     // getGameCanvas().applyPixelEffectAnimation(blurAnim);
-    // getGameCanvas().applyPixelEffectAnimation(rippleAnim);
+    ripple.setWaveSpeed(0.12F);
+    ripple.setAmplitude(3F);
+    ripple.setFrequency(0.1f);
+    
+    getGameCanvas().applyPixelEffectAnimation(rippleAnim);
+    
+    dither.setColorDepth(8);
     getGameCanvas().applyPixelEffectAnimation(ditherAnim);
 
   }
