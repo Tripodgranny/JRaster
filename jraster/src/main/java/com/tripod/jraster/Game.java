@@ -2,16 +2,23 @@ package com.tripod.jraster;
 
 import java.util.ArrayList;
 
-import com.tripod.jraster.asset.GameAssetManager;
+import com.tripod.jraster.asset.GameAssetSystem;
 import com.tripod.jraster.entity.Entity;
 import com.tripod.jraster.graphics.systems.EntityRenderingSystem;
+import com.tripod.jraster.input.InputBindingSystem;
+import com.tripod.jraster.input.KeyboardHandler;
+import com.tripod.jraster.input.MouseHandler;
 
 public abstract class Game implements Runnable {
 
-  private final GameAssetManager assetManager;
+  private final GameAssetSystem assetSystem;
 
   private ArrayList<Entity> entities = new ArrayList<>();
   private EntityRenderingSystem entityRenderingSystem;
+
+  private KeyboardHandler keyboardHandler;
+  private MouseHandler mouseHandler;
+  private InputBindingSystem inputBindingSystem;
 
   private static final double DESIRED_UPS = 60.0;
   private static final double DESIRED_FPS = 60.0;
@@ -29,17 +36,38 @@ public abstract class Game implements Runnable {
 
     this.window = new GameWindow(title);
     this.canvas = new GameCanvas(width, height, scale);
+
+    this.keyboardHandler = new KeyboardHandler();
+    this.mouseHandler = new MouseHandler();
+
+    this.canvas.getCanvas().addKeyListener(keyboardHandler);
+    this.canvas.getCanvas().addMouseListener(mouseHandler);
+    this.canvas.getCanvas().addMouseMotionListener(mouseHandler);
+
     this.window.setCanvas(canvas);
-    this.assetManager = new GameAssetManager();
+
+    this.assetSystem = new GameAssetSystem();
+
+    this.inputBindingSystem = new InputBindingSystem(keyboardHandler,
+        mouseHandler);
 
     loadResources();
 
+    createBindings();
+
+    // TODO : Make this just the entity management system and break out all the
+    // sub systems into this one object through composition
     entityRenderingSystem = new EntityRenderingSystem(this.canvas);
 
     thread = new Thread(this);
     thread.start();
 
   }
+
+  protected abstract void loadResources();
+  protected abstract void createBindings();
+  protected abstract void update();
+  protected abstract void render();
 
   public void addEntity(Entity e) {
     this.entities.add(e);
@@ -49,12 +77,12 @@ public abstract class Game implements Runnable {
     this.entities.remove(e);
   }
 
-  public GameAssetManager getGameAssetManager() {
-    return this.assetManager;
+  public InputBindingSystem getInput() {
+    return this.inputBindingSystem;
   }
 
-  public double getDeltaTime() {
-    return this.deltaTime;
+  public GameAssetSystem getAssetSystem() {
+    return this.assetSystem;
   }
 
   public GameCanvas getGameCanvas() {
@@ -65,13 +93,19 @@ public abstract class Game implements Runnable {
     return this.window;
   }
 
-  protected abstract void loadResources();
-  protected abstract void update();
-  protected abstract void render();
+  public double getDeltaTime() {
+    return this.deltaTime;
+  }
+
+  private void init() {
+    this.window.createCloseGameCallback(this);
+  }
 
   @Override
   public void run() {
-    System.out.println("Thread started");
+
+    init();
+
     running = true;
     long lastTime = System.nanoTime();
     double nsPerTick = 1000000000 / DESIRED_UPS;
@@ -93,17 +127,32 @@ public abstract class Game implements Runnable {
       deltaFrames += passedTime / nsPerFrame;
 
       while (deltaTicks >= 1) {
-        entityRenderingSystem.update(this.entities);
+
         update();
+
+        keyboardHandler.update();
+        mouseHandler.update();
+
+        entityRenderingSystem.update(this.entities);
+
         updates++;
         deltaTicks--;
+
       }
+
       if (deltaFrames >= 1) {
+
+        // TODO : It might be useless to handle any form of render calls from
+        // the users game, instead push it to the system for rendering in the
+        // update loop
         render();
+
         canvas.render();
         frames++;
         deltaFrames--;
+
       }
+
       try {
         Thread.sleep(2);
       } catch (InterruptedException e) {
@@ -116,6 +165,41 @@ public abstract class Game implements Runnable {
         updates = 0;
       }
     }
+
+  }
+
+  public void closeGame() {
+
+    if (!running)
+      return;
+
+    System.out.println("Stopping game loop...");
+    running = false;
+
+    // Wait for the game loop thread to finish its last tick
+    if (thread != null && Thread.currentThread() != thread) {
+      try {
+        // Finish processing naturally
+        thread.join(2000);
+      } catch (InterruptedException e) {
+        System.err.println("Game shutdown interrupted.");
+        Thread.currentThread().interrupt(); // Restore interrupted status
+      }
+    }
+
+    // Clean up UI and system assets cleanly
+    System.out.println("Disposing windows and freeing assets...");
+    if (window != null) {
+      window.dispose();
+    }
+
+    if (assetSystem != null) {
+      // TODO : maybe we need to implement something?
+      assetSystem.clear();
+    }
+
+    System.out.println("Shutdown complete.");
+    System.exit(0);
   }
 
   // TODO : Fix this as it will break small monitors because we are manually

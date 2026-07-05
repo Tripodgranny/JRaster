@@ -22,7 +22,7 @@ public class EntityRenderingSystem {
 
       if (transform != null && animator != null) {
         animator.update();
-        canvas.drawSpriteAnimator(transform.x, transform.y, animator, entity.getDepth());
+        canvas.pushSpriteAnimatorToRenderer(transform.x, transform.y, animator, entity.getDepth());
       }
     }
   }

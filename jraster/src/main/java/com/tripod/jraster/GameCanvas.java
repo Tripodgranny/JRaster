@@ -57,7 +57,7 @@ public class GameCanvas {
     renderables.add(new Circle(xc, yc, radius, color, outline));
   }
 
-  public void drawSpriteAnimator(double x, double y,
+  public void pushSpriteAnimatorToRenderer(double x, double y,
       SpriteAnimator spriteAnimator, int depth) {
     renderables.add(new SpriteRender(x, y, spriteAnimator, depth));
   }
