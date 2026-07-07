@@ -1,10 +1,9 @@
 package com.tripod.jraster;
 
-import java.util.ArrayList;
-
 import com.tripod.jraster.asset.GameAssetSystem;
 import com.tripod.jraster.entity.Entity;
-import com.tripod.jraster.graphics.systems.EntityRenderingSystem;
+import com.tripod.jraster.entity.EntityCollisionSystem;
+import com.tripod.jraster.entity.EntityManager;
 import com.tripod.jraster.input.InputBindingSystem;
 import com.tripod.jraster.input.KeyboardHandler;
 import com.tripod.jraster.input.MouseHandler;
@@ -13,8 +12,7 @@ public abstract class Game implements Runnable {
 
   private final GameAssetSystem assetSystem;
 
-  private ArrayList<Entity> entities = new ArrayList<>();
-  private EntityRenderingSystem entityRenderingSystem;
+  private EntityManager entityManager;
 
   private KeyboardHandler keyboardHandler;
   private MouseHandler mouseHandler;
@@ -47,34 +45,39 @@ public abstract class Game implements Runnable {
     this.window.setCanvas(canvas);
 
     this.assetSystem = new GameAssetSystem();
-
+    
     this.inputBindingSystem = new InputBindingSystem(keyboardHandler,
         mouseHandler);
 
+    // TODO : Make this just the entity management system and break out all the
+    // sub systems into this one object through composition
+    entityManager = new EntityManager(this.canvas, assetSystem);
+    
+    entityManager.loadBlueprints("background", "blueprints/test.json");
+    entityManager.loadBlueprints("test_entity", "blueprints/test_entity.json");
+    
     loadResources();
 
     createBindings();
 
-    // TODO : Make this just the entity management system and break out all the
-    // sub systems into this one object through composition
-    entityRenderingSystem = new EntityRenderingSystem(this.canvas);
 
     thread = new Thread(this);
     thread.start();
 
   }
 
+  protected abstract void start();
   protected abstract void loadResources();
   protected abstract void createBindings();
   protected abstract void update();
   protected abstract void render();
-
-  public void addEntity(Entity e) {
-    this.entities.add(e);
+  
+  public EntityCollisionSystem getEntityCollisionSystem() {
+    return this.entityManager.getEntityCollisionSystem();
   }
-
-  public void removeEntity(Entity e) {
-    this.entities.remove(e);
+  
+  public Entity instantiate(String entityName, int x, int y, int depth) {
+    return this.entityManager.instantiate(entityName, x, y, depth);
   }
 
   public InputBindingSystem getInput() {
@@ -105,6 +108,8 @@ public abstract class Game implements Runnable {
   public void run() {
 
     init();
+    
+    start();
 
     running = true;
     long lastTime = System.nanoTime();
@@ -132,8 +137,8 @@ public abstract class Game implements Runnable {
 
         keyboardHandler.update();
         mouseHandler.update();
-
-        entityRenderingSystem.update(this.entities);
+        
+        entityManager.update();
 
         updates++;
         deltaTicks--;

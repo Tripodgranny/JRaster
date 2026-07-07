@@ -32,4 +32,26 @@ public abstract class PixelEffect {
     return height;
   }
 
+  public void setX(int x) {
+    this.x = x;
+  }
+
+  public void setY(int y) {
+    this.y = y;
+  }
+
+  public void setWidth(int width) {
+    this.width = width;
+  }
+
+  public void setHeight(int height) {
+    this.height = height;
+  }
+  
+  public void setPositionAndScale(double x, double y, double w, double h) {
+    this.x = (int) x;
+    this.y = (int) y;
+    this.width = (int) w;
+    this.height = (int) h;
+  }
 }

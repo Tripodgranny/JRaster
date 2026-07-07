@@ -1,4 +1,4 @@
-package com.tripod.jraster.asset.audio;
+package com.tripod.jraster.asset;
 
 import javax.sound.sampled.Clip;
 
@@ -9,10 +9,14 @@ public class SoundClip {
   protected SoundClip(Clip clip) {
     this.clip = clip;
   }
+  
+  public boolean isPlaying() {
+    if (clip == null) 
+      return false;
+    
+    return clip.isRunning();
+  }
 
-  /**
-   * Plays the sound effect from the beginning.
-   */
   public void play() {
     if (clip == null)
       return;
@@ -24,9 +28,6 @@ public class SoundClip {
     clip.start();
   }
 
-  /**
-   * Loops the sound continuously (perfect for background music).
-   */
   public void loop() {
     if (clip == null)
       return;
@@ -34,18 +35,12 @@ public class SoundClip {
     clip.loop(Clip.LOOP_CONTINUOUSLY);
   }
 
-  /**
-   * Stops the playing sound.
-   */
   public void stop() {
     if (clip != null && clip.isRunning()) {
       clip.stop();
     }
   }
 
-  /**
-   * Clean up the OS audio line resource.
-   */
   protected void dispose() {
     if (clip != null) {
       if (clip.isOpen()) {
@@ -53,5 +48,5 @@ public class SoundClip {
       }
     }
   }
-  
+
 }

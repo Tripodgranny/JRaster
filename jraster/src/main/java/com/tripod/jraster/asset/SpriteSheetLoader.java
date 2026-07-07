@@ -2,6 +2,7 @@ package com.tripod.jraster.asset;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
@@ -23,11 +24,11 @@ public class SpriteSheetLoader {
     return null;
   }
 
-  public void load(String name) {
+  public void load(InputStream inputStream, String name) {
 
     try {
       BufferedImage image = ImageIO
-          .read(SpriteSheetLoader.class.getResource(PATH + name + ".png"));
+          .read(inputStream);
 
       int w = image.getWidth();
       int h = image.getHeight();

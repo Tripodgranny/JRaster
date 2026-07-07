@@ -5,6 +5,7 @@ import java.awt.event.MouseEvent;
 
 import com.tripod.jraster.Game;
 import com.tripod.jraster.asset.Sprite;
+import com.tripod.jraster.entity.BoxCollider;
 import com.tripod.jraster.entity.Entity;
 import com.tripod.jraster.entity.SpriteAnimator;
 import com.tripod.jraster.entity.Transform;
@@ -21,12 +22,11 @@ import com.tripod.jraster.input.MouseInput;
 
 public class GameTest extends Game {
 
-  Entity e1;
-  Entity e2;
+  Entity e1, e2, e3;
 
   CRTScan crtScan = new CRTScan(0, 0, 256, 224);
   MonoChrome mono = new MonoChrome(0, 0, 256, 224);
-  Ripple ripple = new Ripple(0, 0, 256, 224);
+  Ripple ripple = new Ripple(0, 0, 2560, 2240);
   PalletSwap pSwap = new PalletSwap(0, 0, 256, 224);
   Dithering dither = new Dithering(0, 0, 256, 224, 6);
   RadialBlur blur = new RadialBlur(0, 0, 256, 224);
@@ -54,27 +54,39 @@ public class GameTest extends Game {
 
   @Override
   protected void loadResources() {
-    
-    getAssetSystem().loadSoundClip("song");
-    getAssetSystem().getSound("song").loop();
 
     // TODO : Maybe we shouldn't return a sprite sheet, rather it's loaded in
     // memory and then disposed of
-    getAssetSystem().loadSpriteSheet("test");
 
-    Sprite testSprite = new Sprite(getAssetSystem().getSpriteSheet("test"), 256, 224, 0, 0, 1);
-    SpriteAnimator animator = new SpriteAnimator(testSprite, 10);
+    // BACKGROUND - TODO : make a background, tilemap, and tile class
+    // SpriteAnimator animator = new SpriteAnimator(testSprite, 10);
 
-    e1 = new Entity(0, 0, 0);
-    e1.addComponent(animator);
-    addEntity(e1);
+    /*
+     * e1 = new Entity(0, 0, 0); e1.addComponent(animator); addEntity(e1); //
+     * ----
+     * 
+     * // entities Sprite testSprite2 = new
+     * Sprite(getAssetSystem().getSpriteSheet("test"), 32, 32, 0, 0, 1);
+     * SpriteAnimator animator2 = new SpriteAnimator(testSprite2, 10);
+     * 
+     * e2 = new Entity(100, 100, 1); e2.addComponent(animator2);
+     * e2.addComponent(new BoxCollider(e2.getComponent(Transform.class),
+     * animator2.getWidth(), animator2.getHeight())); addEntity(e2);
+     * 
+     * SpriteAnimator animator3 = new SpriteAnimator(testSprite2, 10);
+     * 
+     * e3 = new Entity(25, 100, 1); e3.addComponent(animator3);
+     * e3.addComponent(new BoxCollider(e3.getComponent(Transform.class),
+     * animator3.getWidth(), animator3.getHeight())); addEntity(e3);
+     */
+    // Sprite testSprite = new Sprite(getAssetSystem().getSpriteSheet("test"),
+    // 256, 224, 0, 0, 1);
 
-    Sprite testSprite2 = new Sprite(getAssetSystem().getSpriteSheet("test"), 32, 32, 0, 0, 1);
-    SpriteAnimator animator2 = new SpriteAnimator(testSprite2, 10);
+    // getAssetSystem().loadSoundClip("song").loop();
 
-    e2 = new Entity(100, 100, 1);
-    e2.addComponent(animator2);
-    addEntity(e2);
+    // getAssetSystem().getSound("song").loop();
+
+    getAssetSystem().loadSpriteSheet("ToxicValleyWorldMap");
 
   }
 
@@ -91,6 +103,15 @@ public class GameTest extends Game {
   }
 
   @Override
+  protected void start() {
+    // this.instantiate(null, 0, 0, 0);
+    this.instantiate("background", 0, 0, 0);
+    e2 = this.instantiate("test_entity", 32, 32, 0);
+    this.instantiate("test_entity", 64, 64, 0);
+    this.instantiate("test_entity", 128, 128, 0);
+  }
+
+  @Override
   protected void update() {
 
     if (getInput().isActionPressed("Select")) {
@@ -101,19 +122,23 @@ public class GameTest extends Game {
       this.closeGame();
     }
 
-    if (getInput().isActionPressed("UP")) {
+    if (!getEntityCollisionSystem().willCollide(e2, 0, -1)
+        && getInput().isActionPressed("UP")) {
       e2.getComponent(Transform.class).y -= 1;
     }
 
-    if (getInput().isActionPressed("DOWN")) {
+    if (!getEntityCollisionSystem().willCollide(e2, 0, 1)
+        && getInput().isActionPressed("DOWN")) {
       e2.getComponent(Transform.class).y += 1;
     }
 
-    if (getInput().isActionPressed("LEFT")) {
+    if (!getEntityCollisionSystem().willCollide(e2, -1, 0)
+        && getInput().isActionPressed("LEFT")) {
       e2.getComponent(Transform.class).x -= 1;
     }
 
-    if (getInput().isActionPressed("RIGHT")) {
+    if (!getEntityCollisionSystem().willCollide(e2, 1, 0)
+        && getInput().isActionPressed("RIGHT")) {
       e2.getComponent(Transform.class).x += 1;
     }
 
@@ -122,15 +147,16 @@ public class GameTest extends Game {
   @Override
   protected void render() {
     // pixelEffectAnimation.setSweepVertical(true);
-    getGameCanvas().applyPixelEffectAnimation(blurAnim);
-    ripple.setWaveSpeed(0.12F);
-    ripple.setAmplitude(3F);
-    ripple.setFrequency(0.1f);
-
-    getGameCanvas().applyPixelEffectAnimation(rippleAnim);
-
+    // getGameCanvas().applyPixelEffectAnimation(blurAnim);
     dither.setColorDepth(8);
     getGameCanvas().applyPixelEffectAnimation(ditherAnim);
+
+    /*
+    ripple.setWaveSpeed(0.12F);
+    ripple.setAmplitude(4F);
+    ripple.setFrequency(0.1f);
+    getGameCanvas().applyPixelEffectAnimation(rippleAnim);
+  */
 
   }
 

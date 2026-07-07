@@ -1,27 +1,34 @@
 package com.tripod.jraster.asset;
 
-import com.tripod.jraster.asset.audio.AudioLoader;
-import com.tripod.jraster.asset.audio.SoundClip;
+import java.io.InputStream;
 
+// TODO : Need to manage all files / assets through this 
 public class GameAssetSystem {
 
   private final SpriteSheetLoader spriteSheetLoader = new SpriteSheetLoader();
+  
   private final AudioLoader audioLoader = new AudioLoader();
+  
+  private final ResourceLoader resourceLoader = new PlainResourceLoader();
 
   public GameAssetSystem() {
 
   }
+  
+  public InputStream getAssetStream(String path) {
+    return this.resourceLoader.loadResource(path);
+  }
 
   public void loadSpriteSheet(String name) {
-    this.spriteSheetLoader.load(name);
+    this.spriteSheetLoader.load(getAssetStream("/assets/sprites/" + name + ".png"), name);
   }
   
   public SpriteSheet getSpriteSheet(String name) {
     return this.spriteSheetLoader.getSpriteSheet(name);
   }
 
-  public void loadSoundClip(String name) {
-    this.audioLoader.load(name);
+  public SoundClip loadSoundClip(String name) {
+    return this.audioLoader.load(name);
   }
   
   public SoundClip getSound(String name) {
@@ -29,6 +36,7 @@ public class GameAssetSystem {
   }
 
   public void clear() {
+    this.spriteSheetLoader.clear();
     this.audioLoader.clear();
   }
 
