@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 import com.tripod.jraster.asset.GameAssetSystem;
 import com.tripod.jraster.asset.Sprite;
 import com.tripod.jraster.asset.SpriteSheet;
@@ -15,7 +15,6 @@ import com.tripod.jraster.asset.SpriteSheet;
 // TODO : Need to put most of this loading logic into GameAssetSystem maybe..
 public class EntityManager {
 
-  private final GameCanvas canvas;
   private final GameAssetSystem assetSystem;
 
   private final EntityCollisionSystem entityCollisionSystem;
@@ -25,8 +24,7 @@ public class EntityManager {
   private final Map<String, JsonNode> blueprints = new HashMap<>();
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public EntityManager(GameCanvas canvas, GameAssetSystem assetSystem) {
-    this.canvas = canvas;
+  public EntityManager(Renderer renderer, GameAssetSystem assetSystem) {
     this.assetSystem = assetSystem;
 
     this.entityCollisionSystem = new EntityCollisionSystem(entities);
@@ -132,7 +130,7 @@ public class EntityManager {
     blueprints.clear();
   }
 
-  public void update() {
+  public void update(Renderer renderer) {
     // Avoid concurrent modification by iterating cleanly
     for (int i = 0; i < entities.size(); i++) {
       Entity entity = entities.get(i);
@@ -141,7 +139,7 @@ public class EntityManager {
 
       if (transform != null && animator != null) {
         animator.update();
-        canvas.pushSpriteAnimatorToRenderer(transform.x, transform.y, animator,
+        renderer.pushSpriteAnimatorToRenderer(transform.x, transform.y, animator,
             entity.getDepth());
       }
     }

@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx.animation;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 import com.tripod.jraster.graphics.fx.PixelEffect;
 
 public class NoPixelEffectAnimation extends PixelEffectAnimation {
@@ -15,9 +15,9 @@ public class NoPixelEffectAnimation extends PixelEffectAnimation {
   }
 
   @Override
-  public void execute(GameCanvas canvas, int[] pixels) {
+  public void execute(Renderer renderer, int[] pixels) {
 
-    pixelEffect.applyEffect(canvas, pixels, this.pixelEffect.getX(),
+    pixelEffect.applyEffect(renderer, pixels, this.pixelEffect.getX(),
         this.pixelEffect.getY(), this.pixelEffect.getWidth(),
         this.pixelEffect.getHeight());
 

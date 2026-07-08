@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 
 public abstract class PixelEffect {
   
@@ -14,7 +14,7 @@ public abstract class PixelEffect {
     this.height = height;
   }
 
-  public abstract void applyEffect(GameCanvas canvas, int[] pixels, int x, int y, int w, int h);
+  public abstract void applyEffect(Renderer renderer, int[] pixels, int x, int y, int w, int h);
 
   public int getX() {
     return x;

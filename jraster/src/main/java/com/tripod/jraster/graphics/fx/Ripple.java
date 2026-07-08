@@ -2,6 +2,7 @@ package com.tripod.jraster.graphics.fx;
 
 import java.util.Arrays;
 import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 
 public class Ripple extends PixelEffect {
 
@@ -16,7 +17,7 @@ public class Ripple extends PixelEffect {
   }
 
   @Override
-  public void applyEffect(GameCanvas canvas, int[] pixels, int x, int y, int w, int h) {
+  public void applyEffect(Renderer renderer, int[] pixels, int x, int y, int w, int h) {
     
     // 1. Snapshot the current state of the screen buffer to read from
     int[] sourcePixels = Arrays.copyOf(pixels, pixels.length);
@@ -26,15 +27,15 @@ public class Ripple extends PixelEffect {
 
     // Calculate strict rendering boundaries
     int xStart = Math.max(0, x);
-    int xEnd = Math.min(canvas.WIDTH, x + w);
+    int xEnd = Math.min(renderer.WIDTH, x + w);
     int yStart = Math.max(0, y);
-    int yEnd = Math.min(canvas.HEIGHT, y + h);
+    int yEnd = Math.min(renderer.HEIGHT, y + h);
 
     for (int yp = yStart; yp < yEnd; yp++) {
       // Calculate the horizontal offset for this specific row using sine math
       int xOffset = (int) (amplitude * Math.sin((yp * frequency) + time));
       
-      int rowOffset = yp * canvas.WIDTH;
+      int rowOffset = yp * renderer.WIDTH;
         
       for (int xp = xStart; xp < xEnd; xp++) {
         // Offset the sampling location horizontally
@@ -44,8 +45,8 @@ public class Ripple extends PixelEffect {
         int writeIdx = rowOffset + xp;
         
         // 2. Perform safe coordinate sampling against canvas boundaries
-        if (readX >= 0 && readX < canvas.WIDTH && readY >= 0 && readY < canvas.HEIGHT) {
-            pixels[writeIdx] = sourcePixels[readY * canvas.WIDTH + readX];
+        if (readX >= 0 && readX < renderer.WIDTH && readY >= 0 && readY < renderer.HEIGHT) {
+            pixels[writeIdx] = sourcePixels[readY * renderer.WIDTH + readX];
         } else {
             // Edge bleed cleanup: write a fallback hue if sampling outside bounds
             pixels[writeIdx] = 0x000000; 

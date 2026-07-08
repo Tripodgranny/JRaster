@@ -22,7 +22,6 @@ public abstract class Game implements Runnable {
   private static final double DESIRED_FPS = 60.0;
 
   private final GameWindow window;
-  private final GameCanvas canvas;
   private Thread thread;
 
   private double deltaTime = 0;
@@ -32,17 +31,11 @@ public abstract class Game implements Runnable {
 
     int scale = calculateScale(width, height);
 
-    this.window = new GameWindow(title);
-    this.canvas = new GameCanvas(width, height, scale);
-
     this.keyboardHandler = new KeyboardHandler();
     this.mouseHandler = new MouseHandler();
-
-    this.canvas.getCanvas().addKeyListener(keyboardHandler);
-    this.canvas.getCanvas().addMouseListener(mouseHandler);
-    this.canvas.getCanvas().addMouseMotionListener(mouseHandler);
-
-    this.window.setCanvas(canvas);
+    
+    this.window = new GameWindow(title, width, height, scale);
+    this.window.addInput(keyboardHandler, mouseHandler);
 
     this.assetSystem = new GameAssetSystem();
     
@@ -51,7 +44,7 @@ public abstract class Game implements Runnable {
 
     // TODO : Make this just the entity management system and break out all the
     // sub systems into this one object through composition
-    entityManager = new EntityManager(this.canvas, assetSystem);
+    entityManager = new EntityManager(this.window.getRenderer(), assetSystem);
     
     entityManager.loadBlueprints("background", "blueprints/test.json");
     entityManager.loadBlueprints("test_entity", "blueprints/test_entity.json");
@@ -59,7 +52,6 @@ public abstract class Game implements Runnable {
     loadResources();
 
     createBindings();
-
 
     thread = new Thread(this);
     thread.start();
@@ -79,6 +71,10 @@ public abstract class Game implements Runnable {
   public Entity instantiate(String entityName, int x, int y, int depth) {
     return this.entityManager.instantiate(entityName, x, y, depth);
   }
+  
+  public Renderer getRenderer() {
+    return this.window.getRenderer();
+  }
 
   public InputBindingSystem getInput() {
     return this.inputBindingSystem;
@@ -86,14 +82,6 @@ public abstract class Game implements Runnable {
 
   public GameAssetSystem getAssetSystem() {
     return this.assetSystem;
-  }
-
-  public GameCanvas getGameCanvas() {
-    return this.canvas;
-  }
-
-  public GameWindow getGameWindow() {
-    return this.window;
   }
 
   public double getDeltaTime() {
@@ -138,7 +126,7 @@ public abstract class Game implements Runnable {
         keyboardHandler.update();
         mouseHandler.update();
         
-        entityManager.update();
+        entityManager.update(this.window.getRenderer());
 
         updates++;
         deltaTicks--;
@@ -152,7 +140,8 @@ public abstract class Game implements Runnable {
         // update loop
         render();
 
-        canvas.render();
+        this.window.displayToScreen();
+        
         frames++;
         deltaFrames--;
 
@@ -175,8 +164,7 @@ public abstract class Game implements Runnable {
 
   public void closeGame() {
 
-    if (!running)
-      return;
+    if (!running) return;
 
     System.out.println("Stopping game loop...");
     running = false;
@@ -184,7 +172,6 @@ public abstract class Game implements Runnable {
     // Wait for the game loop thread to finish its last tick
     if (thread != null && Thread.currentThread() != thread) {
       try {
-        // Finish processing naturally
         thread.join(2000);
       } catch (InterruptedException e) {
         System.err.println("Game shutdown interrupted.");
@@ -194,9 +181,7 @@ public abstract class Game implements Runnable {
 
     // Clean up UI and system assets cleanly
     System.out.println("Disposing windows and freeing assets...");
-    if (window != null) {
-      window.dispose();
-    }
+    if (window != null) window.dispose();
 
     if (assetSystem != null) {
       // TODO : maybe we need to implement something?
@@ -215,7 +200,7 @@ public abstract class Game implements Runnable {
         .getScreenSize();
     int maxScaleX = screenSize.width / width;
     int maxScaleY = (screenSize.height - 100) / height;
-    int idealScale = Math.min(maxScaleX - 2, maxScaleY - 2);
+    int idealScale = Math.min(maxScaleX - 1, maxScaleY - 1);
     if (idealScale < 1)
       idealScale = 1;
 

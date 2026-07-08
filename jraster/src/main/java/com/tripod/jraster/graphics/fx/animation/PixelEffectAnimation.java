@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx.animation;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 import com.tripod.jraster.graphics.fx.PixelEffect;
 
 public abstract class PixelEffectAnimation {
@@ -30,7 +30,7 @@ public abstract class PixelEffectAnimation {
 
   public abstract void start();
 
-  public abstract void execute(GameCanvas canvas, int[] pixels);
+  public abstract void execute(Renderer renderer, int[] pixels);
 
   public abstract boolean isComplete();
 

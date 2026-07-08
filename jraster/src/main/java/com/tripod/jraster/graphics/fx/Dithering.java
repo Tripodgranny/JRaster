@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 
 public class Dithering extends PixelEffect {
 
@@ -12,12 +12,12 @@ public class Dithering extends PixelEffect {
   }
 
   @Override
-  public void applyEffect(GameCanvas canvas, int[] pixels, int x, int y, int w,
+  public void applyEffect(Renderer renderer, int[] pixels, int x, int y, int w,
       int h) {
-    applyDithering(canvas, pixels, colorDepth, x, y, w, h);
+    applyDithering(renderer, pixels, colorDepth, x, y, w, h);
   }
 
-  public void applyDithering(GameCanvas canvas, int[] pixels, int colorDepth,
+  public void applyDithering(Renderer renderer, int[] pixels, int colorDepth,
       int x, int y, int width, int height) {
 
     // 4x4 Bayer Matrix scaled up to 0-255 range to avoid floating-point math
@@ -29,15 +29,15 @@ public class Dithering extends PixelEffect {
 
     // Calculate rendering bounds safely to prevent clipping issues
     int xStart = Math.max(0, x);
-    int xEnd = Math.min(canvas.WIDTH, x + width);
+    int xEnd = Math.min(renderer.WIDTH, x + width);
     int yStart = Math.max(0, y);
-    int yEnd = Math.min(canvas.HEIGHT, y + height);
+    int yEnd = Math.min(renderer.HEIGHT, y + height);
 
     // Use yp and xp consistently throughout the loops
     for (int yp = yStart; yp < yEnd; yp++) {
       // CRITICAL: Row offset must use the full canvas width, not the sub-patch
       // width
-      int rowOffset = yp * canvas.WIDTH;
+      int rowOffset = yp * renderer.WIDTH;
       int matrixRow = (yp & 3) << 2;
 
       for (int xp = xStart; xp < xEnd; xp++) {

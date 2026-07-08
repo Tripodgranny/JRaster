@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx.animation;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 import com.tripod.jraster.graphics.fx.PixelEffect;
 
 public class SweepPixelEffectAnimation extends PixelEffectAnimation {
@@ -21,7 +21,7 @@ public class SweepPixelEffectAnimation extends PixelEffectAnimation {
   }
 
   @Override
-  public void execute(GameCanvas canvas, int[] pixels) {
+  public void execute(Renderer renderer, int[] pixels) {
     
     if (!this.isComplete()) {
       if (sweepHorizontal) {
@@ -37,7 +37,7 @@ public class SweepPixelEffectAnimation extends PixelEffectAnimation {
       }
     }
     
-    pixelEffect.applyEffect(canvas, pixels, this.pixelEffect.getX(),
+    pixelEffect.applyEffect(renderer, pixels, this.pixelEffect.getX(),
         this.pixelEffect.getY(), xSweep, ySweep);
     
   }

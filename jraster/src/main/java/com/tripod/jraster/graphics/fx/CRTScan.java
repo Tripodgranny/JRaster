@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 
 public class CRTScan extends PixelEffect {
 
@@ -9,21 +9,21 @@ public class CRTScan extends PixelEffect {
   }
 
   @Override
-  public void applyEffect(GameCanvas canvas, int[] pixels, int x, int y,
+  public void applyEffect(Renderer renderer, int[] pixels, int x, int y,
       int width, int height) {
 
     float scanlineStrength = 0.5f;
 
     int xStart = Math.max(0, x);
-    int xEnd = Math.min(canvas.WIDTH, x + width);
+    int xEnd = Math.min(renderer.WIDTH, x + width);
     int yStart = Math.max(0, y);
-    int yEnd = Math.min(canvas.HEIGHT, y + height);
+    int yEnd = Math.min(renderer.HEIGHT, y + height);
 
     for (int yp = yStart; yp < yEnd; yp++) {
       if (yp % 2 == 0)
         continue;
 
-      int rowOffset = yp * canvas.WIDTH;
+      int rowOffset = yp * renderer.WIDTH;
 
       for (int xp = xStart; xp < xEnd; xp++) {
         int pixelIdx = rowOffset + xp;

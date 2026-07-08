@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 
 public class PalletSwap extends PixelEffect {
 
@@ -9,7 +9,7 @@ public class PalletSwap extends PixelEffect {
   }
 
   @Override
-  public void applyEffect(GameCanvas canvas, int[] pixels, int x, int y, int w,
+  public void applyEffect(Renderer renderer, int[] pixels, int x, int y, int w,
       int h) {
 
     int[] gameboyPalette = {0x0F380F, // Darkest Green
@@ -20,13 +20,13 @@ public class PalletSwap extends PixelEffect {
     int paletteSize = gameboyPalette.length;
 
     int xStart = Math.max(0, x);
-    int xEnd = Math.min(canvas.WIDTH, x + w);
+    int xEnd = Math.min(renderer.WIDTH, x + w);
     int yStart = Math.max(0, y);
-    int yEnd = Math.min(canvas.HEIGHT, y + h);
+    int yEnd = Math.min(renderer.HEIGHT, y + h);
 
     // Loop through the specific 2D bounding box
     for (int yp = yStart; yp < yEnd; yp++) {
-      int rowOffset = yp * canvas.WIDTH;
+      int rowOffset = yp * renderer.WIDTH;
 
       for (int xp = xStart; xp < xEnd; xp++) {
         int pixelIdx = rowOffset + xp;

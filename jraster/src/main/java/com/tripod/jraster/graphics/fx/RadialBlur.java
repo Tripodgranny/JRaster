@@ -1,6 +1,6 @@
 package com.tripod.jraster.graphics.fx;
 
-import com.tripod.jraster.GameCanvas;
+import com.tripod.jraster.Renderer;
 
 public class RadialBlur extends PixelEffect {
 
@@ -11,12 +11,12 @@ public class RadialBlur extends PixelEffect {
       super(x, y, width, height);
     }
 
-    public void applyEffect(GameCanvas canvas, int[] pixels, int x, int y, int w, int h) {
+    public void applyEffect(Renderer renderer, int[] pixels, int x, int y, int w, int h) {
         // Calculate safe rendering boundaries clamped to the actual canvas dimensions
         int xStart = Math.max(0, x);
-        int xEnd = Math.min(canvas.WIDTH, x + w);
+        int xEnd = Math.min(renderer.WIDTH, x + w);
         int yStart = Math.max(0, y);
-        int yEnd = Math.min(canvas.HEIGHT, y + h);
+        int yEnd = Math.min(renderer.HEIGHT, y + h);
 
         // Center of the radial blur is the midpoint of the sub-patch
         float centerX = x + (w / 2.0f);
@@ -24,7 +24,7 @@ public class RadialBlur extends PixelEffect {
 
         // Loop through the defined sub-patch region
         for (int yp = yStart; yp < yEnd; yp++) {
-            int rowOffset = yp * canvas.WIDTH; // Step using full canvas width stride
+            int rowOffset = yp * renderer.WIDTH; // Step using full canvas width stride
             float dirY = yp - centerY;
 
             for (int xp = xStart; xp < xEnd; xp++) {
@@ -43,12 +43,12 @@ public class RadialBlur extends PixelEffect {
 
                     // Clamp sample points cleanly to the boundaries of the canvas
                     if (sampleX < 0) sampleX = 0;
-                    if (sampleX >= canvas.WIDTH) sampleX = canvas.WIDTH - 1;
+                    if (sampleX >= renderer.WIDTH) sampleX = renderer.WIDTH - 1;
                     if (sampleY < 0) sampleY = 0;
-                    if (sampleY >= canvas.HEIGHT) sampleY = canvas.HEIGHT - 1;
+                    if (sampleY >= renderer.HEIGHT) sampleY = renderer.HEIGHT - 1;
 
                     // Read sample pixel using canvas stride logic
-                    int sampleColor = pixels[sampleY * canvas.WIDTH + sampleX];
+                    int sampleColor = pixels[sampleY * renderer.WIDTH + sampleX];
                     
                     sumR += (sampleColor >> 16) & 0xFF;
                     sumG += (sampleColor >> 8) & 0xFF;

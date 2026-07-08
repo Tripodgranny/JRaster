@@ -4,10 +4,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import com.tripod.jraster.Game;
-import com.tripod.jraster.asset.Sprite;
-import com.tripod.jraster.entity.BoxCollider;
 import com.tripod.jraster.entity.Entity;
-import com.tripod.jraster.entity.SpriteAnimator;
 import com.tripod.jraster.entity.Transform;
 import com.tripod.jraster.graphics.fx.CRTScan;
 import com.tripod.jraster.graphics.fx.Dithering;
@@ -104,9 +101,10 @@ public class GameTest extends Game {
 
   @Override
   protected void start() {
-    // this.instantiate(null, 0, 0, 0);
     this.instantiate("background", 0, 0, 0);
+    
     e2 = this.instantiate("test_entity", 32, 32, 0);
+    
     this.instantiate("test_entity", 64, 64, 0);
     this.instantiate("test_entity", 128, 128, 0);
   }
@@ -149,7 +147,7 @@ public class GameTest extends Game {
     // pixelEffectAnimation.setSweepVertical(true);
     // getGameCanvas().applyPixelEffectAnimation(blurAnim);
     dither.setColorDepth(8);
-    getGameCanvas().applyPixelEffectAnimation(ditherAnim);
+    getRenderer().applyPixelEffectAnimation(ditherAnim);
 
     /*
     ripple.setWaveSpeed(0.12F);
